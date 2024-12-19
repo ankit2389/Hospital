@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Bill</title>
+</head>
+<body>
+    <h1>Bill Pending</h1>
+    <p>Patient: {{ name }}</p>
+    <p>Total Bill: ₹{{ total_bill }}</p>
+    <p>Please collect the pending payment before discharging the patient.</p>
+    <a href="{{ url_for('show_patients') }}">Back to Patient List</a>
+</body>
+</html>

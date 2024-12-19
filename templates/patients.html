@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        let dischargedPatientRow = null; // Track the row being discharged
+
+        // Open the discharge pop-up
+        function dischargePatient() {
+            var checkboxes = document.querySelectorAll('.discharge-checkbox:checked');
+            if (checkboxes.length === 1) {
+                dischargedPatientRow = checkboxes[0].closest('tr'); // Track the row
+                var patientName = dischargedPatientRow.getAttribute('data-patient-name');
+
+                // Show the discharge pop-up
+                document.getElementById('discharge-popup').style.display = 'block';
+                document.getElementById('patient-name').value = patientName;
+            } else if (checkboxes.length === 0) {
+                alert('Please select a patient to discharge.');
+            } else {
+                alert('Please select only one patient to discharge at a time.');
+            }
+        }
+
+        // Close a pop-up and delete the discharged patient record
+        function closePopup(popupId) {
+            document.getElementById(popupId).style.display = 'none';
+            if (popupId === 'success-popup' && dischargedPatientRow) {
+                dischargedPatientRow.remove(); // Remove the row from the table
+                dischargedPatientRow = null; // Reset the tracking variable
+            }
+        }
+
+        // Handle discharge response dynamically
+        function handleDischargeResponse(response) {
+            if (response.status === 'success') {
+                document.getElementById('success-message').textContent = response.message;
+                document.getElementById('bill-amount').textContent = response.total_bill;
+                document.getElementById('success-popup').style.display = 'block';
+            } else if (response.status === 'pending') {
+                document.getElementById('pending-message').textContent = response.message;
+                document.getElementById('bill-amount-pending').textContent = response.total_bill;
+                document.getElementById('pending-popup').style.display = 'block';
+            }
+        }
+
+        // Submit the discharge form
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('discharge-form').onsubmit = function (event) {
+                event.preventDefault(); // Prevent default form submission
+                var formData = new FormData(this);
+
+                // AJAX call to submit the form
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        closePopup('discharge-popup'); // Close the discharge pop-up
+                        handleDischargeResponse(data); // Show the success or pending pop-up
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while processing the discharge.');
+                    });
+            };
+        });
+    </script>
+</head>
+<body>
+    <h1>Patient Details</h1>
+    <table border="1" cellspacing="0" cellpadding="8" align="center">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>Doctor_Recommended</th>
+                <th>Room</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in patients %}
+            <tr data-patient-name="{{ patient.Name }}">
+                <td><input type="checkbox" class="discharge-checkbox"></td>
+                <td>{{ patient.Name }}</td>
+                <td>{{ patient.Gender }}</td>
+                <td>{{ patient.Age }}</td>
+                <td>{{ patient.Address }}</td>
+                <td>{{ patient.Doctor_recommended }}</td>
+                <td>{{ patient.Room }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <div style="text-align: center;">
+        <a href="{{ url_for('add_patient') }}"><button>Add New Patient</button></a>
+        <button onclick="dischargePatient()">Discharge Selected</button>
+        <a href="{{ url_for('dashboard') }}"><button>Back to Dashboard</button></a>
+    </div>
+
+    <!-- Discharge Pop-Up -->
+    <div id="discharge-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid black;">
+        <h2>Discharge Patient</h2>
+        <form id="discharge-form" method="POST" action="{{ url_for('discharge_patient') }}">
+            <input type="hidden" name="name" id="patient-name">
+            <label>No. of Days:</label><br>
+            <input type="number" name="days" required><br>
+            <label>Per Day Charges:</label><br>
+            <input type="number" name="charges" required><br>
+            <label>Has the Patient Paid the Bill?</label><br>
+            <select name="paid" required>
+                <option value="y">Yes</option>
+                <option value="n">No</option>
+            </select><br><br>
+            <button type="submit">Submit</button>
+            <button type="button" onclick="closePopup('discharge-popup')">Cancel</button>
+        </form>
+    </div>
+
+    <!-- Success Pop-Up -->
+    <div id="success-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid black;">
+        <h2>Discharge Successful</h2>
+        <p id="success-message"></p>
+        <p>Total Bill Paid: ₹<span id="bill-amount"></span></p>
+        <button onclick="closePopup('success-popup')">Close</button>
+    </div>
+
+    <!-- Pending Bill Pop-Up -->
+    <div id="pending-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid black;">
+        <h2>Bill Pending</h2>
+        <p id="pending-message"></p>
+        <p>Total Bill: ₹<span id="bill-amount-pending"></span></p>
+        <button onclick="closePopup('pending-popup')">Close</button>
+    </div>
+</body>
+</html>

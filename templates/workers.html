@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function deleteSelected() {
+            var checkboxes = document.querySelectorAll('.delete-checkbox:checked');
+            var selectedWorkerNames = [];
+            
+            checkboxes.forEach(function(checkbox) {
+                var row = checkbox.closest('tr');
+                var workerName = row.getAttribute('data-worker-name');
+                selectedWorkerNames.push(workerName);
+            });
+
+            if (selectedWorkerNames.length > 0) {
+                if (confirm('Are you sure you want to delete the selected record(s)?')) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/delete_workers', true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            checkboxes.forEach(function(checkbox) {
+                                var row = checkbox.closest('tr');
+                                row.remove();
+                            });
+                            alert('Record(s) deleted successfully!');
+                        } else if (xhr.readyState === 4) {
+                            alert('An error occurred while deleting records.');
+                        }
+                    };
+                    xhr.send(JSON.stringify({ worker_names: selectedWorkerNames }));
+                }
+            } else {
+                alert('Please select a record to delete.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Staff Details</h1>
+    <table border="1" cellspacing="0" cellpadding="8" align="center">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>Contact</th>
+                <th>Monthly Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for worker in workers %}
+            <tr data-worker-name="{{ worker.Name }}">
+                <td><input type="checkbox" class="delete-checkbox"></td>
+                <td>{{ worker.Name }}</td>
+                <td>{{ worker.Age }}</td>
+                <td>{{ worker.Address }}</td>
+                <td>{{ worker.Contact }}</td>
+                <td>{{ worker.Monthly_Salary }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <div style="text-align: center;">
+        <a href="{{ url_for('add_worker') }}"><button>Add New Staff</button></a>
+        <button onclick="deleteSelected()">Delete Selected</button>
+        <a href="{{ url_for('dashboard') }}"><button>Back to Dashboard</button></a>
+    </div>
+</body>
+</html>

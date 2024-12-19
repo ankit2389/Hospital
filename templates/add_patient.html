@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Patient</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Add New Patient</h1>
+    <form method="POST" action="{{ url_for('add_patient') }}" style="width: 300px; margin: 0 auto;">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+        <label>Gender:</label><br>
+        <input type="text" name="gender" required><br>
+        <label>Age:</label><br>
+        <input type="number" name="age" required><br>
+        <label>Address:</label><br>
+        <input type="text" name="address" required><br>
+        <label>Doctor Recommended:</label><br>
+        <input type="text" name="doctor" required><br>
+        <label>Room:</label><br>
+        <input type="text" name="room" required><br><br>
+        <button type="submit">Add Patient</button>
+    </form>
+    <br>
+    <div style="text-align: center;">
+        <a href="{{ url_for('show_patients') }}"><button>Back to Patient List</button></a>
+    </div>
+</body>
+</html>
