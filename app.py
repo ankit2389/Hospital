@@ -27,7 +27,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor()                 
         cursor.execute("INSERT INTO user_data VALUES (%s, %s)", (username, password))
         conn.commit()
         cursor.close()
